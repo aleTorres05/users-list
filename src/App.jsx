@@ -18,7 +18,14 @@ export default function UsersList() {
   }
 
   function onSubmit(data) {
-    setUsers([...users, data]);
+    setUsers([
+      ...users,
+      {
+        firstname: data.UserFirstname,
+        lastname: data.UserLastname,
+        email: data.UserEmail,
+      },
+    ]);
     reset();
   }
 
@@ -33,24 +40,24 @@ export default function UsersList() {
       >
         <input
           type="text"
-          placeholder="Firstname"
+          placeholder="firstname"
           className={clsx("border rounded p-2 max-w-screen-sm", {
-            "border-2 border-red-500 bg-red-300": errors.user,
+            "border-2 border-red-500 bg-red-300": errors.UserFirstname,
           })}
           required
-          {...register("firstname", {
+          {...register("UserFirstname", {
             required: { value: true, message: "Campo Requerido" },
             minLength: { value: 2, message: "Minimun 2 caraters" },
           })}
         />
         <input
           type="text"
-          placeholder="Lastname"
+          placeholder="lastname"
           className={clsx("border rounded p-2 max-w-screen-sm", {
-            "border-2 border-red-500 bg-red-300": errors.user,
+            "border-2 border-red-500 bg-red-300": errors.UserLastname,
           })}
           required
-          {...register("lastname", {
+          {...register("UserLastname", {
             required: { value: true, message: "Campo Requerido" },
             minLength: { value: 2, message: "Minimun 2 caraters" },
           })}
@@ -59,12 +66,16 @@ export default function UsersList() {
           type="email"
           placeholder="email"
           className={clsx("border rounded p-2 max-w-screen-sm", {
-            "border-2 border-red-500 bg-red-300": errors.user,
+            "border-2 border-red-500 bg-red-300": errors.UserEmail,
           })}
           required
-          {...register("email", {
+          {...register("UserEmail", {
             required: { value: true, message: "Campo Requerido" },
             minLength: { value: 2, message: "Minimun 2 caraters" },
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+              message: "Correo inválido",
+            },
           })}
         />
         <button
@@ -74,9 +85,19 @@ export default function UsersList() {
           Create User
         </button>
       </form>
-      {errors.user && (
+      {errors.UserFirstname && (
         <p className="text-red-500 text-center text-sm  font-semibold">
-          {errors.user?.message}
+          {errors.UserFirstname?.message}
+        </p>
+      )}
+      {errors.UserLastname && (
+        <p className="text-red-500 text-center text-sm  font-semibold">
+          {errors.UserLastname?.message}
+        </p>
+      )}
+      {errors.UserEmail && (
+        <p className="text-red-500 text-center text-sm  font-semibold">
+          {errors.UserEmail?.message}
         </p>
       )}
       <div className="max-w-screen-sm w-full mx-auto p-5 flex flex-col gap-1">
@@ -91,15 +112,16 @@ export default function UsersList() {
           </div>
         )}
         {users.map((user, idx) => {
+          console.log("Aqui", user);
           return (
             <div
               key={`user-${idx}`}
               className=" bg-white/10 rounded p-4 flex flex-row justify-between text-white"
             >
-              <span>
-                {user.firstname} {user.lastname}
+              <span className="select-none ">
+                {`${user.firstname} ${user.lastname}`}
               </span>
-              <span>{user.email}</span>
+              <span className="select-none ">{user.email}</span>
               <span
                 onClick={() => removeUser(idx)}
                 className="text-red-500 rounded-full p-1 size-4"
