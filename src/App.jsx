@@ -1,15 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import clsx from "clsx";
+import { createKoder, deleteKoder, getKoders } from "./api";
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
+
+  //useEffect se usa para ejecutar en dos momentos
+  // 1. cuando el componente se renderiza por primera vez
+  // 2. cuando alguna de las dependencias cambia
+  useEffect(() => {
+    console.log("Hola desde useEffect");
+    getKoders()
+      .then((koders) => {
+        setUsers(koders);
+      })
+      .catch((error) => {
+        console.error("Error al obtener koder");
+        alert("Error al obtener koders");
+      });
+  }, []);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid, isSubmitted },
     reset,
+    setFocus,
   } = useForm();
 
   function removeUser(idxToRemove) {
@@ -17,16 +34,50 @@ export default function UsersList() {
     setUsers(newUsers);
   }
 
-  function onSubmit(data) {
-    setUsers([
-      ...users,
-      {
-        firstname: data.UserFirstname,
-        lastname: data.UserLastname,
+  async function onSubmit(data) {
+    // setUsers([
+    //   ...users,
+    //   {
+    //     firstName: data.UserFirstname,
+    //     lastName: data.UserLastname,
+    //     email: data.UserEmail,
+    //   },
+    // ]);
+    // reset();
+
+    try {
+      await createKoder({
+        firstName: data.UserFirstname,
+        lastName: data.UserLastname,
         email: data.UserEmail,
-      },
-    ]);
+      });
+
+      const kodersList = await getKoders();
+      setUsers(kodersList);
+      setFocus("firstName");
+    } catch (error) {
+      console.error("Error al crear Koder", error);
+      alert("Error al crear koder");
+    }
     reset();
+  }
+
+  function onDelete(koderId) {
+    deleteKoder(koderId)
+      .then(() => {
+        getKoders()
+          .then((koders) => {
+            setUsers(koders);
+          })
+          .catch((error) => {
+            console.error("Error al obtener Koder");
+            alert("Error al obtener koder");
+          });
+      })
+      .catch((error) => {
+        console.error("Error al eliminar koder", error);
+        alert("Error al Eliminar Koder");
+      });
   }
 
   return (
@@ -119,11 +170,11 @@ export default function UsersList() {
               className=" bg-white/10 rounded p-4 flex flex-row justify-between text-white"
             >
               <span className="select-none ">
-                {`${user.firstname} ${user.lastname}`}
+                {`${user.firstName} ${user.lastName}`}
               </span>
               <span className="select-none ">{user.email}</span>
               <span
-                onClick={() => removeUser(idx)}
+                onClick={() => onDelete(user.id)}
                 className="text-red-500 rounded-full p-1 size-4"
               >
                 X
